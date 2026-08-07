@@ -11,6 +11,7 @@ import {
   getMinimumTime,
 } from "@/utils/date";
 
+
 interface RescheduleModalProps {
   session: Session | null;
   isOpen: boolean;
@@ -21,23 +22,29 @@ interface RescheduleModalProps {
   loading: boolean;
 }
 
+
 export default function RescheduleModal({
-session,
-isOpen,
-onClose,
-onSubmit,
-loading,
-}: RescheduleModalProps){
- const [formData, setFormData] = useState<{
-  date: string;
-  time: string;
-  reason: RescheduleRequest["reason"] | "";
-}>({
-  date: "",
-  time: "",
-  reason: "",
-});
-  const [validationError, setValidationError] = useState("");
+  session,
+  isOpen,
+  onClose,
+  onSubmit,
+  loading,
+}: RescheduleModalProps) {
+
+  const [formData, setFormData] = useState<{
+    date: string;
+    time: string;
+    reason: RescheduleRequest["reason"] | "";
+  }>({
+    date: "",
+    time: "",
+    reason: "",
+  });
+
+
+  const [validationError, setValidationError] =
+    useState("");
+
 
   useEffect(() => {
     if (!isOpen) {
@@ -51,49 +58,73 @@ loading,
     });
 
     setValidationError("");
+
   }, [isOpen]);
 
+
   const minimumDate = getMinimumDate();
+
 
   if (!isOpen || !session) {
     return null;
   }
 
+
   const handleChange = (
     field: "date" | "time" | "reason",
     value: string
   ) => {
+
     const nextFormData = {
       ...formData,
       [field]: value,
     };
 
+
     setFormData(nextFormData);
 
-   if (field === "date" || field === "time") {
-  if (!nextFormData.date || !nextFormData.time) {
-    setValidationError("");
-    return;
-  }
 
-  const selectedDateTime = combineDateAndTime(
-    nextFormData.date,
-    nextFormData.time
-  );
+    if (
+      field === "date" ||
+      field === "time"
+    ) {
 
-  const minimumDateTime = getMinimumDateTime();
+      if (
+        !nextFormData.date ||
+        !nextFormData.time
+      ) {
+        setValidationError("");
+        return;
+      }
 
-  if (selectedDateTime < minimumDateTime) {
-    setValidationError(
-      "Please select a time at least 2 hours from now."
-    );
-  } else {
-    setValidationError("");
-  }
-}
+
+      const selectedDateTime =
+        combineDateAndTime(
+          nextFormData.date,
+          nextFormData.time
+        );
+
+
+      const minimumDateTime =
+        getMinimumDateTime();
+
+
+      if (
+        selectedDateTime < minimumDateTime
+      ) {
+        setValidationError(
+          "Please select a time at least 2 hours from now."
+        );
+      } else {
+        setValidationError("");
+      }
+    }
   };
 
-const handleSubmit = async () => {    if (
+
+  const handleSubmit = async () => {
+
+    if (
       !formData.date ||
       !formData.time ||
       !formData.reason
@@ -101,73 +132,129 @@ const handleSubmit = async () => {    if (
       return;
     }
 
-    const selectedDateTime = combineDateAndTime(
-      formData.date,
-      formData.time
-    );
 
-    const minimumDateTime = getMinimumDateTime();
+    const selectedDateTime =
+      combineDateAndTime(
+        formData.date,
+        formData.time
+      );
 
-    if (selectedDateTime < minimumDateTime) {
+
+    const minimumDateTime =
+      getMinimumDateTime();
+
+
+    if (
+      selectedDateTime < minimumDateTime
+    ) {
       setValidationError(
         "Please select a time at least 2 hours from now."
       );
+
       return;
     }
-const requestData: RescheduleRequest = {
-  sessionId: session.id,
-  newDateTime: selectedDateTime.toISOString(),
-  reason: formData.reason,
-};
 
-await onSubmit(requestData);
+
+    // Parent selects date/time in local timezone.
+    // Convert to UTC before sending so backend
+    // storage remains consistent across locations.
+    const requestData: RescheduleRequest = {
+      sessionId: session.id,
+      newDateTime:
+        selectedDateTime.toISOString(),
+      reason: formData.reason,
+    };
+
+
+    await onSubmit(requestData);
   };
 
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">
-            Request Reschedule
-          </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+
+        <div className="flex items-start justify-between">
+
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Request Reschedule
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Update your tutoring session timing.
+            </p>
+          </div>
+
 
           <button
             onClick={onClose}
-            className="text-gray-500"
+            disabled={loading}
+            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50"
           >
             ✕
           </button>
+
         </div>
 
-        <div className="mt-4">
-          <p className="text-gray-600">
-            Subject: {session.subject}
+
+        <div className="mt-5 rounded-lg bg-gray-50 p-4">
+
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">
+              Subject:
+            </span>{" "}
+            {session.subject}
           </p>
 
-          <p className="text-gray-600">
-            Teacher: {session.teacherName}
+
+          <p className="mt-1 text-sm text-gray-700">
+            <span className="font-medium">
+              Teacher:
+            </span>{" "}
+            {session.teacherName}
           </p>
+
         </div>
 
-        <div className="mt-6 space-y-4">
+
+        <p className="mt-5 text-sm text-gray-500">
+          Times are shown in your local timezone.
+          The selected time will be converted to UTC
+          before saving.
+        </p>
+
+
+        <div className="mt-5 space-y-4">
+
+
           <input
             type="date"
             min={minimumDate}
             value={formData.date}
             onChange={(e) =>
-              handleChange("date", e.target.value)
+              handleChange(
+                "date",
+                e.target.value
+              )
             }
-            className="w-full rounded-lg border p-2"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-black"
           />
+
 
           <input
             type="time"
             value={formData.time}
             onChange={(e) =>
-              handleChange("time", e.target.value)
+              handleChange(
+                "time",
+                e.target.value
+              )
             }
-            className="w-full rounded-lg border p-2"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-black"
           />
+
 
           {validationError && (
             <p className="text-sm text-red-600">
@@ -175,45 +262,61 @@ await onSubmit(requestData);
             </p>
           )}
 
+
           <select
             value={formData.reason}
             onChange={(e) =>
-              handleChange("reason", e.target.value)
+              handleChange(
+                "reason",
+                e.target.value
+              )
             }
-            className="w-full rounded-lg border p-2"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition focus:border-black"
           >
+
             <option value="">
               Select Reason
             </option>
 
-            {Object.values(RESCHEDULE_REASONS).map(
-              (reason) => (
-                <option
-                  key={reason}
-                  value={reason}
-                >
-                  {reason}
-                </option>
-              )
-            )}
+
+            {Object.values(
+              RESCHEDULE_REASONS
+            ).map((reason) => (
+
+              <option
+                key={reason}
+                value={reason}
+              >
+                {reason}
+              </option>
+
+            ))}
+
           </select>
+
+
         </div>
 
-<button
-  onClick={handleSubmit}
-  disabled={
-    loading ||
-    Boolean(validationError) ||
-    !formData.date ||
-    !formData.time ||
-    !formData.reason
-  }
-  className="mt-6 w-full rounded-lg bg-black py-2 text-white disabled:cursor-not-allowed disabled:opacity-50"
->
-  {loading ? "Submitting..." : "Submit Request"}
-</button>
+
+        <button
+          onClick={handleSubmit}
+          disabled={
+            loading ||
+            Boolean(validationError) ||
+            !formData.date ||
+            !formData.time ||
+            !formData.reason
+          }
+          className="mt-6 w-full rounded-lg bg-black py-2.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading
+            ? "Submitting..."
+            : "Submit Request"}
+        </button>
+
+
       </div>
+
     </div>
   );
 }
-
