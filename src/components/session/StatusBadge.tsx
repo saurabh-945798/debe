@@ -1,7 +1,15 @@
-import React from "react";
+import { SessionStatus } from "@/types/session";
 
-export default function StatusBadge() {
+interface StatusBadgeProps {
+  status: SessionStatus;
+}
+
+export default function StatusBadge({
+  status,
+}: StatusBadgeProps) {
   return (
-    <span>Status</span>
+    <span className="rounded-full bg-gray-100 px-3 py-1 text-sm">
+      {status}
+    </span>
   );
 }

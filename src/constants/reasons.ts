@@ -1,8 +1,9 @@
-import { RescheduleReason } from "@/types/session";
+export const RESCHEDULE_REASONS = {
+  CONFLICT: "Conflict",
+  ILLNESS: "Illness",
+  TIME_ZONE: "Time Zone",
+  OTHER: "Other",
+} as const;
 
-export const RESCHEDULE_REASONS: RescheduleReason[] = [
-  "Conflict",
-  "Illness",
-  "Time Zone",
-  "Other",
-];
+export type RescheduleReason =
+  (typeof RESCHEDULE_REASONS)[keyof typeof RESCHEDULE_REASONS];
