@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Session } from "@/types/session";
 import { RESCHEDULE_REASONS } from "@/constants/reasons";
+
 import {
   combineDateAndTime,
   getMinimumDate,
+  getMinimumTime,
 } from "@/utils/date";
 
 interface RescheduleModalProps {
@@ -27,6 +29,17 @@ export default function RescheduleModal({
     time: "",
     reason: "",
   });
+  useEffect(() => {
+  if (!isOpen) {
+    return;
+  }
+
+  setFormData({
+    date: getMinimumDate(),
+    time: getMinimumTime(),
+    reason: "",
+  });
+}, [isOpen]);
 
 
   const minimumDate = getMinimumDate();
