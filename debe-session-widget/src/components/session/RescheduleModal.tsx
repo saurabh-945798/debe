@@ -154,16 +154,14 @@ export default function RescheduleModal({
       return;
     }
 
+   const requestData: RescheduleRequest = {
+  sessionId: session.id,
+  newDateTime: selectedDateTime.toISOString(),
+  reason: formData.reason,
+};
 
-    // Parent selects date/time in local timezone.
-    // Convert to UTC before sending so backend
-    // storage remains consistent across locations.
-    const requestData: RescheduleRequest = {
-      sessionId: session.id,
-      newDateTime:
-        selectedDateTime.toISOString(),
-      reason: formData.reason,
-    };
+console.log("Selected Date Object:", selectedDateTime);
+console.log("Value sent to backend:", requestData.newDateTime);
 
 
     await onSubmit(requestData);
